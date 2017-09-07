@@ -4,20 +4,26 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Sample URL - http://readcomics.website/uploads/manga/infinity-tpb-2014/chapters/1/374.jpg
+ * @author Justin
+ *
+ */
 public class ComicDataminer {
+
+  protected static String urlTemplate = "http://readcomics.website/uploads/manga/infinity-tpb-2014/chapters/1/%s.jpg";
+  protected static String urlAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:25.0) Gecko/20100101 Firefox/25.0";
+
   public static void main(final String[] args) {
     // TODO Auto-generated method stub
     for(int i = 1; i <= 866; i++ ) {
 
-      final String url = "http://readcomics.website/uploads/manga/infinity-tpb-2014/chapters/1/"+
-          (i < 10 ? "0" + i : i) +".jpg";
-      //      url = new URL("http://vancouver.gasbuddy.com/index.aspx?fuel=A&area=Richmond");
-      //      is = url.openStream();
+      final String url = String.format(urlTemplate, i < 10 ? "0" + i : i);
 
       URLConnection openConnection = null;
       try {
         openConnection = new URL(url).openConnection();
-        openConnection.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:25.0) Gecko/20100101 Firefox/25.0");
+        openConnection.addRequestProperty("User-Agent", urlAgent);
       }
       catch (final Exception e1) {
         System.out.println("Can not open URL " + i);
@@ -25,15 +31,14 @@ public class ComicDataminer {
 
       if (openConnection != null) {
         try(InputStream in = openConnection.getInputStream()){
-          Files.copy(in, Paths.get("C:\\Users\\Justin\\Downloads\\Infinity\\"+i+".jpg"));
+          Files.copy(in, Paths.get("C:\\Users\\Justin\\Downloads\\InfinityTest\\"+i+".jpg"));
         }
         catch (final Exception e1) {
           System.out.println("Can not get URL " + i);
         }
       }
 
-
     }
-    //    http://readcomics.website/uploads/manga/infinity-tpb-2014/chapters/1/374.jpg
+
   }
 }
