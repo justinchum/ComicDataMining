@@ -1,8 +1,12 @@
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,10 +25,12 @@ import org.json.JSONArray;
 public class ComicDataMiningPage {
 
   private static String pageURL = "http://readcomics.website/comic/infinity-tpb-2014/1";
+  private static String downloadTemplate = "http://readcomics.website/uploads/manga/%s/chapters/%s/%s";
   private static String urlAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:25.0) Gecko/20100101 Firefox/25.0";
   private static String imageRegex = "(?is).*var\\s+pages\\s+=\\s+\\[([^\\]]*).*";
   private static Pattern imagePattern = Pattern.compile(imageRegex);
   private static final String imgPaths = "//script";
+  private static final String outputPath = "C:\\Users\\Justin\\Downloads\\";
 
   private static TagNode node;
 
@@ -40,6 +46,37 @@ public class ComicDataMiningPage {
       props.setOmitComments(true);
     }
     return cleaner;
+  }
+
+  private static void downloadImage(final String image) {
+    System.out.println(image);
+    if (image == null || image.isEmpty()) {
+      return;
+    }
+    URLConnection openConnection = null;
+    try {
+
+      final String temp = pageURL.substring(0, pageURL.lastIndexOf("/"));
+      final String chapter =  pageURL.substring(pageURL.lastIndexOf("/") + 1);
+      final String comic = temp.substring(temp.lastIndexOf("/")+1);
+      final String outputDirPath = String.format("%s%s_%s", outputPath, comic, chapter);
+
+      final File outputDir = new File(outputDirPath);
+      if (!outputDir.exists()) {
+        outputDir.mkdirs();
+      }
+      else if (!outputDir.isDirectory()) {
+        System.out.println("The path is not a directory. " + outputDirPath);
+      }
+      openConnection = new URL(String.format(downloadTemplate, comic, chapter, image)).openConnection();
+      openConnection.addRequestProperty("User-Agent", urlAgent);
+      final InputStream in = openConnection.getInputStream();
+      Files.copy(in, Paths.get(outputDirPath+"\\"+image));
+
+    }
+    catch (final Exception e1) {
+      System.out.println("Can not open URL " + image);
+    }
   }
 
   public static void main(final String[] args) {
@@ -78,7 +115,7 @@ public class ComicDataMiningPage {
 
           final JSONArray jsonArray = new JSONArray(String.format("[%s]", matcher.group(1)));
           for (int i = 0; i < jsonArray.length(); i++) {
-            System.out.println(String.format("%s/%s", pageURL, jsonArray.getJSONObject(i).getString("page_image")));
+            downloadImage(jsonArray.getJSONObject(i).getString("page_image"));
           }
         }
       }
