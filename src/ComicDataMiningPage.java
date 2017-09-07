@@ -28,15 +28,21 @@ public class ComicDataMiningPage {
 
   private static TagNode node;
 
-  public static void main(final String[] args) throws Exception {
-    final HtmlCleaner cleaner = new HtmlCleaner();
-    final CleanerProperties props = cleaner.getProperties();
-    props.setAllowHtmlInsideAttributes(true);
-    props.setAllowMultiWordAttributes(true);
-    props.setRecognizeUnicodeChars(true);
-    props.setOmitComments(true);
+  private static HtmlCleaner cleaner;
 
+  protected static HtmlCleaner getHtmlCleaner() {
+    if (cleaner == null) {
+      cleaner = new HtmlCleaner();
+      final CleanerProperties props = cleaner.getProperties();
+      props.setAllowHtmlInsideAttributes(true);
+      props.setAllowMultiWordAttributes(true);
+      props.setRecognizeUnicodeChars(true);
+      props.setOmitComments(true);
+    }
+    return cleaner;
+  }
 
+  public static void main(final String[] args) {
     URL url;
     URLConnection conn;
 
@@ -44,15 +50,13 @@ public class ComicDataMiningPage {
       url = new URL(pageURL);
       conn = url.openConnection();
       conn.addRequestProperty("User-Agent", urlAgent);
-      node = cleaner.clean(new InputStreamReader(conn.getInputStream()));
+      node = getHtmlCleaner().clean(new InputStreamReader(conn.getInputStream()));
     }
     catch (final MalformedURLException e) {
       System.out.println("Corrupt URL detected");
-      throw e;
     }
     catch (final IOException e) {
       System.out.println("Unable to connection to the URL: " + pageURL);
-      throw e;
     }
 
     Object[] scriptNodes = null;
@@ -61,7 +65,6 @@ public class ComicDataMiningPage {
     }
     catch (final XPatherException e) {
       System.out.println("Unable to parse script nodes");
-      throw e;
     }
 
     if (scriptNodes != null && scriptNodes.length > 0) {
@@ -75,14 +78,13 @@ public class ComicDataMiningPage {
 
           final JSONArray jsonArray = new JSONArray(String.format("[%s]", matcher.group(1)));
           for (int i = 0; i < jsonArray.length(); i++) {
-            jsonArray.getJSONObject(i);
             System.out.println(String.format("%s/%s", pageURL, jsonArray.getJSONObject(i).getString("page_image")));
           }
         }
       }
     }
     else {
-      throw new Exception("Unable to parse script nodes from " + pageURL);
+      System.out.println("Unable to parse script nodes from " + pageURL);
     }
   }
 }
