@@ -30,7 +30,7 @@ public class ComicDataMiningPage {
   private static String imageRegex = "(?is).*var\\s+pages\\s+=\\s+\\[([^\\]]*).*";
   private static Pattern imagePattern = Pattern.compile(imageRegex);
   private static final String imgPaths = "//script";
-  private static final String outputPath = "C:\\Users\\Justin\\Downloads\\";
+  private static final String outputPath = "C:\\Users\\%USERNAME%\\Downloads\\";
 
   private static TagNode node;
 
